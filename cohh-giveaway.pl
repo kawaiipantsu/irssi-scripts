@@ -3,14 +3,6 @@
 # - Simple Giveaway detecter and automatic !enter script
 ##
 
-
-## Giveaway pattern 28 Feb 2018
-# 28.1640'30  cohhilition *** A NEW GIVEAWAY IS OPEN: (The Inner World): Sponsored by Ejento! (10 Tokens - Regular Giveaway) This is a promotion from CohhCarnage. Twitch does not sponsor or endorse broadcaster promotions and is not responsible for them. ***
-# 28.1640'30  cohhilition *** Type !enter to be entered to win. [ID:147] ***
-# ......
-# 28.1643'30  cohhilition *** The winner is: thesh4d0w *** You have won The Inner World donated by Ejento. You will be contacted via Twitch PM by a moderator. This was a promotion from CohhCarnage. Twitch does not sponsor or endorse broadcaster promotions and is not responsible for them.
-####################################
-
 use strict;
 use Irssi;
 use Irssi::Irc;
@@ -22,13 +14,24 @@ use IO::File;
 
 $VERSION = '0.00.04';
 %IRSSI = (
-	authors			=> 'KawaiiPantsu',
-	contact			=> '@davidbl',
+	authors			=> 'David BL',
+	contact			=> 'dbl@darknet.dk',
 	name			=> 'cohh-giveaway',
 	description		=> 'An easy way to auto enter any giveaway that Twitch TV user Cohhcarnage runs.',
 	license			=> 'GNU GPL Version 2 or later',
 	url			=> 'https://github.com/kawaiipantsu/irssi-scripts'	
 );
+
+
+### Your Twtich TV IRC Nickname
+##
+## Dont forget that it's always is lower case!
+
+my $twitchtv_nick = "mytwitchnick";
+
+
+
+
 
 ##
 # Pre checks
@@ -63,6 +66,7 @@ sub action_giveaway {
 sub signalHandler($server, $msg, $nick, $target, $address) {
 	my ($server, $msg, $nick, $target, $address) = @_;
 
+	# No need to do to much work if it's not even the GiveAway bot!
 	if ( $nick != "cohhilition") {	return 0; }
 
 	# Handle Give Away (START)
@@ -71,34 +75,33 @@ sub signalHandler($server, $msg, $nick, $target, $address) {
 		my $gamename = $1;
 		$windowname->print("%W%0GIVEAWAY : ".$target." -> Giveaway started for game: $gamename",MSGLEVEL_CLIENTCRAP) if ($windowname);
 		giveawayLog($nick,$target,$msg);
-		# Sending !enter command and also waiting for 2 - 4 sec randomly before posting the command!
-                sleep (int(rand(2)) + 2);
-		$server->command("msg ".$target." !enter");
+		# Sending !enter command after 3 seconds
+		Irssi::timeout_add_once(3000, sub { 
+			$server->command("msg ".$target." !enter");
+		}, undef);
 		return 0;
 	}
 	# Handle Give Away (END)
 	if ( $msg =~ /^\*\*\* The winner is: (.*) \*\*\*.*/i) {
 		my $windowname = Irssi::window_find_name('HL');
 		my $winner = $1;
-		$windowname->print("%W%0GIVEAWAY : ".$target." -> Giveaway ended winner is $winner",MSGLEVEL_CLIENTCRAP) if ($windowname);
+		$windowname->print("%W%0GIVEAWAY : ".$target." -> Giveaway ended winner is: $winner",MSGLEVEL_CLIENTCRAP) if ($windowname);
 		giveawayLog($nick,$target,$msg);
 		# I am the winner !!
-		if ( $winner == "readyupdave" ) {
-                	sleep (int(rand(2)) + 2);
-			$server->command("msg ".$target." Yay! :D");
+		if ( $winner eq $twitchtv_nick ) {
+			Irssi::timeout_add_once(3000, sub { 
+				$server->command("msg ".$target." Yaaay! :D");
+			}, undef);
+			giveawayLog($nick,$target,"I WON! - Check Twitch notifications and or private message.");
 		}
-
 		return 0;
 	}
-
-	#my $windowname = Irssi::window_find_name('HL');
-	#$windowname->print("%W%0ACTION : ".$nick." -> ".$target." saying ".$msg,MSGLEVEL_CLIENTCRAP) if ($windowname);
-
 	return 0;
 }
 
 sub giveawayLog {
 	my($nick,$channel,$msg) = @_;
+
    	open(GIVEAWAYLOG, ">>", $file) or return;
    	print GIVEAWAYLOG time." $nick @ $channel -> $msg\n";
   	close(GIVEAWAYLOG);
