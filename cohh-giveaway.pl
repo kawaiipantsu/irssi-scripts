@@ -2,6 +2,17 @@
 # CohhCarnage - Twitch TV
 # - Simple Giveaway detecter and automatic !enter script
 ##
+#
+# This script is just ment for fun and it's a easy way to enter Cohhcarnage's
+# Giveaways if you are using Irssi as a chat client for Twitch TV. Please note
+# this is not fully auto, you will still need to reply to their giveaway if you win.
+#
+# Please note that you need the Highlite plugin as well and your Highlite window
+# must be named "HL". I know the default is called something else but this is how
+# i made it. But search for 'HL' and changed it where needed if your highlite window
+# is called something else. Cheers! 
+#
+###############
 
 use strict;
 use Irssi;
@@ -12,7 +23,7 @@ use vars qw($VERSION %IRSSI);
 use Irssi qw(command_bind signal_add);
 use IO::File;
 
-$VERSION = '0.00.04';
+$VERSION = '0.01.00';
 %IRSSI = (
 	authors			=> 'David BL',
 	contact			=> 'dbl@darknet.dk',
@@ -29,8 +40,7 @@ $VERSION = '0.00.04';
 
 my $twitchtv_nick = "mytwitchnick";
 
-
-
+######################################################################
 
 
 ##
@@ -112,6 +122,9 @@ sub giveawayLog {
 ##
 # Set active signals
 ##
+
 signal_add("message irc action", "action_giveaway");	# Look at action messages in channels
+
 #signal_add("message public", "public_giveaway");   	# Look at public messages in channels
+
 #signal_add("message private", "private_giveaway"); 	# Look at private messages from users
